@@ -7,9 +7,6 @@
 // Include custom bitmaps
 #include "bitmaps.h"
 
-// Boost
-#include <boost_1_51_0.h>
-
 #define NUM_SAMPLES  1680    // Waveform tables length. Reduce to get more freq
 #define MAX_WAVE_TYPES 4      // Number of waveform tables
 
