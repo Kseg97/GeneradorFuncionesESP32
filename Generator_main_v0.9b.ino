@@ -7,7 +7,7 @@
 // Include custom bitmaps
 #include "bitmaps.h"
 
-#define NUM_SAMPLES  1683    // Waveform tables length. Reduce to get more freq
+#define NUM_SAMPLES  1682    // Waveform tables length. Reduce to get more freq
 #define MAX_WAVE_TYPES 4      // Number of waveform tables
 
 // Following values are intended for two channels device
