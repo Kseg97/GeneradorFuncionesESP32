@@ -83,7 +83,7 @@ void changeVal(bool dec) {
         break;
       };
       case 3: {
-        phase[optTop] = phase[optTop] + inc;
+        phase[optTop] = phase[optTop] + inc*10;
         if(phase[optTop] > NUM_SAMPLES) phase[optTop] = 0;
         if(phase[optTop] < 0) phase[optTop] = NUM_SAMPLES;
         break;
@@ -104,10 +104,9 @@ void drawCChannel(){
     
     j += frequency[0];
     k += frequency[1];
-    m += (int)(N/128);
     
     if (j >= NUM_SAMPLES) j = 0; 
-    if (k >= NUM_SAMPLES) k = -phase[1];
+    if (k >= NUM_SAMPLES - phase[1]) k = -phase[1];
   }  
 
   for(int n = 0; n < 128; n++){
