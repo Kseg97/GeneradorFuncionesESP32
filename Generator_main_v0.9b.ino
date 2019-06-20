@@ -12,7 +12,7 @@
 
 // Following values are intended for two channels device
 volatile int wave_type[] = {3, 3};   //(0:sine, triag, saw, sqr)
-volatile int frequency[] = {1, 1};   // decimal (1--) to // Hz (by-10)(1-10) //~(0 is casted to 1)
+volatile int frequency[] = {2, 2};   // decimal (1--) to // Hz (by-10)(1-10) //~(0 is casted to 1)
 volatile float amplitude[] = {0.5f, 0.5f}; // decimal (0-1) to %
 volatile int phase[] = {0, 0};       // ° // (by-10)(-18,18)
 
@@ -73,7 +73,7 @@ void changeVal(bool dec) {
       case 1: {
         frequency[optTop] = frequency[optTop] + inc;
         //if(frequency[optTop] > 10) frequency[optTop] = 1; //max w/o distort, recalibrate if resampled
-        if(frequency[optTop] < 1) frequency[optTop] = 1;
+        if(frequency[optTop] < 2) frequency[optTop] = 2;
         break;
       };
       case 2: {
