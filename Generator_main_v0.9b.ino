@@ -12,7 +12,7 @@
 
 // Following values are intended for two channels device
 volatile int wave_type[] = {3, 3};   //(0:sine, triag, saw, sqr)
-volatile int frequency[] = {2, 2};   // decimal (1--) to // Hz (by-10)(1-10) //~(0 is casted to 1)
+volatile int frequency[] = {2, 2};   // decimal (1--) to // Hz (by-10)(1-10) //~(0 is casted to 1) (only 0.4% deviation freq)
 volatile float amplitude[] = {0.5f, 0.5f}; // decimal (0-1) to %
 volatile int phase[] = {0, 0};       // ° // (by-10)(-18,18)
 
@@ -23,6 +23,16 @@ byte touch_threshold = 400;                  // Threshold for touch event
 byte threshold = 30;                   // Threshold for touch sensor
 bool onTouch = false;
 byte onTouchData = 0;
+
+/*
+ *  STATS
+ *  Voltage: 3 Vpp; Vmin: -1.5V; Vmax: 1.5V
+ *  Frequency: 100Hz up to 6kHz (and beyong with poor quality), increments at 50 Hz
+ *  Freq. Stability: 0.4% deviation
+ *  Phase: complete, up to 360°
+ *  Waveform: free, tables can contain any waveform, used Triangular, Sine, Square and Sawtooth
+ *  UI interface with 3 Channels, C Channel displays A & B combined waveform
+ */
 
 SSD1306  display(0x3c, 18, 19);
 
@@ -78,8 +88,8 @@ void changeVal(bool dec) {
       };
       case 2: {
         amplitude[optTop] = amplitude[optTop] + inc*0.05f;
-        if(amplitude[optTop] > 1.6f) amplitude[optTop] = 0.0f;
-        if(amplitude[optTop] < -0.01f) amplitude[optTop] = 1.6f;
+        if(amplitude[optTop] > 1.5f) amplitude[optTop] = 0.0f;
+        if(amplitude[optTop] < -0.01f) amplitude[optTop] = 1.5f;
         break;
       };
       case 3: {
@@ -89,6 +99,9 @@ void changeVal(bool dec) {
         break;
       };
     }
+  } else if(optTop == 2) { // C Channel
+    // TODO: Increment and decrement are used horizontal osc offset/trigger over a
+    // global variable that is read 
   }
 }
 
@@ -190,7 +203,7 @@ void drawMainMenu() {
   }
   display.drawXbm(16, 20, 32, 16, signal_icon);
   display.drawString(96, 20, (String) ((84000/NUM_SAMPLES)*frequency[optTop]) + " Hz"); //TODO: f mult currentfreq, see notes
-  display.drawString(32, 46, (String) (3200*amplitude[optTop]) + " mV");
+  display.drawString(32, 46, (String) (3000*amplitude[optTop]) + " mV");
   if(optTop != 0 && optMain != 3) 
     display.drawString(96, 46, (String) (360.0f/NUM_SAMPLES*phase[optTop]) + "°");
 
@@ -210,7 +223,7 @@ void drawMainMenu() {
     case 2: {
       display.fillRect(0, 40, 64, 24);
       display.setColor(BLACK);  
-      display.drawString(32, 46, (String) (3200*amplitude[optTop]) + " mV");  
+      display.drawString(32, 46, (String) (3000*amplitude[optTop]) + " mV");  
       break;
     };
     case 3: {        
@@ -270,8 +283,12 @@ void setup() {
 
 void loop() {
   //TODO: Make freq and phase estimations
-  dacWrite(25, amplitude[0]*WaveFormTable[wave_type[0]][iteratorA*frequency[0]]);
-  dacWrite(26, amplitude[1]*WaveFormTable[wave_type[1]][iteratorB*frequency[1] + phase[1]]);
+  //1.58 comes from vpp/2=1.5-(-1.66)=3.16/2=1.58
+  // 1.5/1.58 = 0.94936... offsetting vmin(-1.66,tested) and vmax(1.5v,tested) of dac, offset is 0.08v (1.58-1.5v)
+  // then dac <-- 0.9494*amp[]*table[] + offset
+  dacWrite(25, 0.9494f*amplitude[0]*WaveFormTable[wave_type[0]][iteratorA*frequency[0]] + 0.08f);
+  dacWrite(26, 0.9494f*amplitude[1]*WaveFormTable[wave_type[1]][iteratorB*frequency[1] + phase[1]] + 0.08f);
+  // Then, Vpp is 3.0V, centered (-1.5v to 1.5v).
   //10us
   iteratorA++;
   iteratorB++;
